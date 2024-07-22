@@ -28,4 +28,9 @@ public class NetworkManager : MonoBehaviour
     {
         Net_ConnectionHandler.Instance.CloseConnection();
     }
+
+    private void OnApplicationQuit()
+    {
+        Net_ConnectionHandler.Instance.CloseConnection();
+    }
 }

@@ -64,7 +64,9 @@ public class Net_MessageInterpreter
                         HandleInitialData(wrapper.Payload);
                         break;
                     case Wrapper.Types.MessageType.Clientlogout:
-
+                        Debug.Log("ClientLogout");
+                        //HandleClientLogout(wrapper.Payload);
+                        break;
                     default:
                         break;
                 }

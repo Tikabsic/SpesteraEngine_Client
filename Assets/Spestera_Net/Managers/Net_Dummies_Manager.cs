@@ -46,6 +46,9 @@ public class Net_Dummies_Manager : MonoBehaviour
 
     private void RemoveLoggedoutPlayer(uint playerId)
     {
-        Debug.Log($"Client with {playerId} id has logged out!");
+        NetworkManager._syncContext.Post(_ =>
+        {
+            Debug.Log($"Client with {playerId} id has logged out!");
+        }, null);
     }
 }
