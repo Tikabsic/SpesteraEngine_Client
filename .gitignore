@@ -379,3 +379,7 @@ FodyWeavers.xsd
 /Library
 /Assets/SzarkWater.shader
 /Assets/test.txt
+/Assets/Scenes
+/Assets/Settings
+/Assets/Readme.asset
+/Assets/UniversalRenderPipelineGlobalSettings.asset
