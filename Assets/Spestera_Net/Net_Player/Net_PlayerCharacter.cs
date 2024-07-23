@@ -11,10 +11,9 @@ public class Net_PlayerCharacter : MonoBehaviour
 
     private void ProcessInitializeData(PlayerInitialData data)
     {
-        net_controller.SetPlayerSpeed((float)data.PlayerMovementspeed);
-        Vector3 initialPosition = new Vector3((float)data.PositionX, (float)data.PositionY, (float)data.PositionZ);
-        net_controller.TeleportPlayerToSpecificLocation(initialPosition);
-        net_controller.SetInitialCorrectPosition(initialPosition);
+            net_controller.SetPlayerSpeed((float)data.PlayerMovementspeed);
+            Vector3 initialPosition = new Vector3((float)data.PositionX, (float)data.PositionY, (float)data.PositionZ);
+            net_controller.TeleportPlayerToSpecificLocation(initialPosition);
+            net_controller.SetInitialCorrectPosition(initialPosition);
     }
-
 }

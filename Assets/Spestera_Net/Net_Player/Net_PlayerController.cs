@@ -138,7 +138,6 @@ public class Net_PlayerController : MonoBehaviour
 
     public void SetPlayerSpeed(float ms)
     {
-        Debug.Log(ms + " ms set");
         speed = ms;
     }
 
@@ -157,16 +156,12 @@ public class Net_PlayerController : MonoBehaviour
     {
         var playerTransform = hb.Players.FirstOrDefault(x => x.PlayerId == NetworkCredits.PlayerId);
 
-        Debug.Log($"pid = {NetworkCredits.PlayerId}");
-
         if (playerTransform != null)
         {
 
             Vector3 correctTransform = new Vector3(playerTransform.PositionX, playerTransform.PositionY, playerTransform.PositionZ);
             lastReceivedPosition = correctTransform;
 
-            NetworkManager._syncContext.Post(_ =>
-            {
                 if (characterController.transform.position == correctTransform)
                 {
                     Debug.Log("first correct");
@@ -186,7 +181,6 @@ public class Net_PlayerController : MonoBehaviour
                 {
                     _lastCorrectPosition = correctTransform;
                     badPositionConuter = 0;
-                    Debug.Log("Correct");
                 }
                 else
                 {
@@ -197,7 +191,6 @@ public class Net_PlayerController : MonoBehaviour
                         characterController.transform.position = correctTransform;
                     }
                 }
-            }, null);
         }
     }
 

@@ -6,82 +6,106 @@ public class Net_MessageInterpreter
 {
     public static event Action<PlayerInitialData> OnPlayerDataRecived;
     public static event Action<uint> OnOtherPlayerLogout;
+    public static event Action<PlayerInitialData> OnOtherPlayerLogin;
 
     public void InterpretMessage(byte[] data, int length)
     {
-        try
+        NetworkManager._syncContext.Post(_ =>
         {
-            Wrapper wrapper = Wrapper.Parser.ParseFrom(data, 0, length);
-            if (wrapper != null)
+            try
             {
-                switch (wrapper.Type)
+                Wrapper wrapper = new Wrapper();
+                wrapper = Wrapper.Parser.ParseFrom(data, 0, length);
+                if (wrapper != null)
                 {
-                    case Wrapper.Types.MessageType.Response:
-                        HandleResponse(wrapper.Payload);
-                        break;
-                    case Wrapper.Types.MessageType.Playerinitialdata:
 
-                        break;
-                    default:
-                        try
-                        {
-                            Heartbeat heartbeat = Heartbeat.Parser.ParseFrom(data, 0, length);
-                            if (heartbeat != null)
-                            {
-                                Net_HeartbeatHandler.Instance.HandleMessage(heartbeat);
-                                return;
-                            }
-                        }
-                        catch (InvalidProtocolBufferException ex)
-                        {
-                            Debug.LogError($"Error parsing as Heartbeat: {ex.Message}");
-                        }
-                        break;
+                    switch (wrapper.Type)
+                    {
+                        case Wrapper.Types.MessageType.Heartbeat:
+                            Heartbeat hb = Heartbeat.Parser.ParseFrom(wrapper.Payload);
+                            Net_HeartbeatHandler.Instance.HandleMessage(hb);
+                            break;
+                        case Wrapper.Types.MessageType.Response:
+                            HandleResponse(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Playerinitialdata:
+                            HandleInitialData(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Clientlogout:
+                            HandleClientLogout(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Clientlogin:
+                            Debug.Log("Client login");
+                            HandleClientLogin(wrapper.Payload);
+                            break;
+                        default:
+                            Debug.Log("Unknown message type");
+                            break;
+                    }
+                    return;
                 }
-                return;
             }
-        }
-        catch (InvalidProtocolBufferException ex)
-        {
-            Debug.LogError($"Error parsing as Wrapper: {ex.Message}");
-        }
-        Debug.Log("Unknown message format");
+            catch (InvalidProtocolBufferException ex)
+            {
+                Debug.LogError($"Error parsing as Wrapper: {ex.Message}");
+            }
+        }, null);
     }
 
     public void HandleWrapper(Wrapper wrapper)
     {
-        try
+
+        NetworkManager._syncContext.Post(_ =>
         {
-            if (wrapper != null)
+            try
             {
-                switch (wrapper.Type)
+                if (wrapper != null)
                 {
-                    case Wrapper.Types.MessageType.Response:
-                        Debug.Log("response");
-                        HandleResponse(wrapper.Payload);
-                        break;
-                    case Wrapper.Types.MessageType.Playerinitialdata:
-                        HandleInitialData(wrapper.Payload);
-                        break;
-                    case Wrapper.Types.MessageType.Clientlogout:
-                        Debug.Log("ClientLogout");
-                        //HandleClientLogout(wrapper.Payload);
-                        break;
-                    default:
-                        break;
+
+                    switch (wrapper.Type)
+                    {
+                        case Wrapper.Types.MessageType.Heartbeat:
+                            Heartbeat hb = Heartbeat.Parser.ParseFrom(wrapper.Payload);
+                            Net_HeartbeatHandler.Instance.HandleMessage(hb);
+                            break;
+                        case Wrapper.Types.MessageType.Response:
+                            HandleResponse(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Playerinitialdata:
+                            HandleInitialData(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Clientlogout:
+                            HandleClientLogout(wrapper.Payload);
+                            break;
+                        case Wrapper.Types.MessageType.Clientlogin:
+                            Debug.Log("Client login");
+                            HandleClientLogin(wrapper.Payload);
+                            break;
+                        default:
+                            Debug.Log("Unknown message type");
+                            break;
+                    }
+                    return;
                 }
-                return;
             }
-        }
-        catch (InvalidProtocolBufferException ex)
-        {
-            Debug.LogError($"Error parsing as Wrapper: {ex.Message}");
-        }
-        Debug.Log("Unknown message format");
+            catch (InvalidProtocolBufferException ex)
+            {
+                Debug.Log($"Error parsing as Wrapper: {ex.Message}");
+            }
+            Debug.Log("Unknown message format");
+        }, null);
     }
     private void HandleResponse(ByteString payload)
     {
 
+    }
+
+    private void HandleClientLogin(ByteString payload)
+    {
+        Debug.Log("New player logged in");
+        ClientLogin newClientLoginData = ClientLogin.Parser.ParseFrom(payload);
+        PlayerInitialData newClientInitialData = newClientLoginData.PlayerData;
+        OnOtherPlayerLogin?.Invoke(newClientInitialData);
     }
 
     private void HandleClientLogout(ByteString payload)

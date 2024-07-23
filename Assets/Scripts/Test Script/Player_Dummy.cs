@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Player_Dummy : MonoBehaviour
 {
-    public ushort _pDummyId;
+    public uint _pDummyId;
     public float rotationSpeed = 5f;
     public float movementspeed = 5f;
     private Quaternion targetRotation = Quaternion.identity;

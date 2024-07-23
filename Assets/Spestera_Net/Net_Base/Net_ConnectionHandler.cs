@@ -1,10 +1,12 @@
 using Google.Protobuf;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
@@ -74,17 +76,24 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     {
         while (true)
         {
-            if (stream.DataAvailable)
+            try
             {
                 var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                 if (bytesRead > 0)
                 {
+
+                    OnBandwidthRecivedTCP?.Invoke(bytesRead);
+
                     try
                     {
                         Wrapper wrapper = Wrapper.Parser.ParseFrom(buffer, 0, bytesRead);
                         _messageInterpreter.HandleWrapper(wrapper);
                     }
                     catch (InvalidProtocolBufferException ex)
+                    {
+                    }
+
+                    try
                     {
                         byte[] decompressedData = TryDecompress(buffer);
                         if (decompressedData != null)
@@ -93,11 +102,23 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
                         }
                         else
                         {
-                            Debug.LogError("Failed to parse data as Wrapper and decompress.");
-
                         }
                     }
+                    catch (InvalidProtocolBufferException ex)
+                    {
+                        Debug.LogError($"Decompression error: {ex.Message}");
+                    }
                 }
+            }
+            catch (IOException ex)
+            {
+                Debug.LogError($"IO Exception: {ex.Message}");
+                break;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception: {ex.Message}");
+                break;
             }
 
             await Task.Delay(1);
@@ -106,7 +127,6 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 
     private byte[] TryDecompress(byte[] compressedData)
     {
-        // Spróbuj zdekompresowaæ dane
         try
         {
             return ByteCompressor.DecompressData(compressedData);
@@ -126,16 +146,12 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
                 _tcpClient = new TcpClient();
                 await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIp), _serverPort_TCP);
             }
-
-            // Przygotowanie danych do wys³ania
             byte[] data = wrapper.ToByteArray();
-
-            // Przes³anie danych przez po³¹czenie TCP
             await _tcpClient.GetStream().WriteAsync(data, 0, data.Length);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Wyst¹pi³ b³¹d podczas wysy³ania danych: {ex.Message}");
+            Console.WriteLine($"Error while sending message : {ex.Message}");
         }
     }
     #endregion
@@ -145,10 +161,38 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     {
         while (true)
         {
+
             UdpReceiveResult result = await _udpClient.ReceiveAsync();
-            byte[] decompressedData = ByteCompressor.DecompressData(result.Buffer);
-            OnBandwidthRecivedUDP?.Invoke(result.Buffer.Length);
-            _messageInterpreter.InterpretMessage(decompressedData, decompressedData.Length);
+
+            if (result.Buffer.Length > 0)
+            {
+                OnBandwidthRecivedUDP?.Invoke(result.Buffer.Length);
+            }
+
+            try
+            {
+                Wrapper wrapper = Wrapper.Parser.ParseFrom(result.Buffer, 0, result.Buffer.Length);
+                _messageInterpreter.HandleWrapper(wrapper);
+            }
+            catch (InvalidProtocolBufferException ex)
+            {
+            }
+
+            try
+            {
+                byte[] decompressedData = TryDecompress(result.Buffer);
+                if (decompressedData != null)
+                {
+                    _messageInterpreter.InterpretMessage(decompressedData, decompressedData.Length);
+                }
+                else
+                {
+                }
+            }
+            catch (InvalidProtocolBufferException ex)
+            {
+                Debug.LogError($"Decompression error: {ex.Message}");
+            }
         }
     }
 
