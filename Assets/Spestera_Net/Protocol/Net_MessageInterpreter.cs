@@ -5,8 +5,10 @@ using UnityEngine;
 public class Net_MessageInterpreter
 {
     public static event Action<PlayerInitialData> OnPlayerDataRecived;
+    public static event Action OnPlayerLogin;
     public static event Action<uint> OnOtherPlayerLogout;
     public static event Action<PlayerInitialData> OnOtherPlayerLogin;
+    public static event Action<WorldData> OnWorldDataRecived;
 
     public void InterpretMessage(byte[] data, int length)
     {
@@ -24,6 +26,9 @@ public class Net_MessageInterpreter
                         case Wrapper.Types.MessageType.Heartbeat:
                             Heartbeat hb = Heartbeat.Parser.ParseFrom(wrapper.Payload);
                             Net_HeartbeatHandler.Instance.HandleMessage(hb);
+                            break;
+                        case Wrapper.Types.MessageType.Worlddata:
+                            HandleWorldData(wrapper.Payload);
                             break;
                         case Wrapper.Types.MessageType.Response:
                             HandleResponse(wrapper.Payload);
@@ -119,5 +124,12 @@ public class Net_MessageInterpreter
         var playerInitialData = PlayerInitialData.Parser.ParseFrom(payload);
         NetworkCredits.SetPlayerId(playerInitialData.PlayerId);
         OnPlayerDataRecived?.Invoke(playerInitialData);
+        OnPlayerLogin?.Invoke();
+    }
+
+    private void HandleWorldData(ByteString payload)
+    {
+        var worldData = WorldData.Parser.ParseFrom(payload);
+        OnWorldDataRecived?.Invoke(worldData);
     }
 }

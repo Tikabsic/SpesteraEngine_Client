@@ -151,11 +151,12 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
             {
                 var compressedData = ByteCompressor.CompressData(wrapper.ToByteArray());
                 await _tcpClient.GetStream().WriteAsync(compressedData, 0, compressedData.Length);
+                Debug.Log($"sent compressed data {compressedData.Length} <- lenght");
             }
             else
             {
             byte[] data = wrapper.ToByteArray();
-            await _tcpClient.GetStream().WriteAsync(data, 0, data.Length);
+                await _tcpClient.GetStream().WriteAsync(data, 0, data.Length);
             }
         }
         catch (Exception ex)

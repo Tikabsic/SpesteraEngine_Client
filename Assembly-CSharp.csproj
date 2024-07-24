@@ -68,6 +68,7 @@
     <Compile Include="Assets\Spestera_Net\Protocol\NetworkCredentials.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\ZlibConstants.cs" />
     <Compile Include="Assets\Scripts\Managers\Manager_Chunks.cs" />
+    <Compile Include="Assets\Spestera_Net\Managers\Net_WorldManager.cs" />
     <Compile Include="Assets\Spestera_Net\Net_Player\pcontroller.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BZip2InputStream.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BZip2OutputStream.cs" />

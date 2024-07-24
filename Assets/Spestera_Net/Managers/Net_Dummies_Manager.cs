@@ -1,10 +1,15 @@
 using Google.Protobuf.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class Net_Dummies_Manager : MonoBehaviour
 {
+    //Events
+    public static event Action OnWorldDataInitialized;
+
+
     [SerializeField] private Player_Dummy _playerDummyPrefab;
 
     public List<Player_Dummy> _playerDummies = new List<Player_Dummy>();
@@ -16,6 +21,7 @@ public class Net_Dummies_Manager : MonoBehaviour
         Net_HeartbeatHandler.Instance.OnPositionUpdate_event += UpdateDummiesTransform;
         Net_MessageInterpreter.OnOtherPlayerLogout += RemoveLoggedoutPlayer;
         Net_MessageInterpreter.OnOtherPlayerLogin += InitializeNewPlayer;
+        Net_MessageInterpreter.OnWorldDataRecived += InitializeWorldData;
     }
 
     private void UpdateDummiesTransform(Heartbeat hb)
@@ -25,9 +31,9 @@ public class Net_Dummies_Manager : MonoBehaviour
 
     private void UpdatePlayerDummiesTransform(RepeatedField<PlayerPosition> players)
     {
-            foreach (var playerData in players)
-            {
-                var pdummy = _playerDummies.Find(x => x._pDummyId == playerData.PlayerId);
+        foreach (var playerData in players)
+        {
+            var pdummy = _playerDummies.Find(x => x._pDummyId == playerData.PlayerId);
             if (pdummy != null)
             {
                 pdummy.SetTargetPosition(playerData);
@@ -47,26 +53,32 @@ public class Net_Dummies_Manager : MonoBehaviour
     private void InitializeNewPlayer(PlayerInitialData data)
     {
 
-            var newDummy = GameObject.Instantiate<Player_Dummy>(_playerDummyPrefab);
-            newDummy._pDummyId = data.PlayerId;
-            Vector3 initialPosition = new Vector3(data.PositionX, data.PositionY, data.PositionZ);
-            newDummy.transform.position = initialPosition;
-            newDummy.movementspeed = data.PlayerMovementspeed;
+        var newDummy = GameObject.Instantiate<Player_Dummy>(_playerDummyPrefab);
+        newDummy._pDummyId = data.PlayerId;
+        Vector3 initialPosition = new Vector3(data.PositionX, data.PositionY, data.PositionZ);
+        newDummy.transform.position = initialPosition;
+        newDummy.movementspeed = data.PlayerMovementspeed;
 
-
-            _playerDummies.Add(newDummy);
-            Debug.Log($"New player initialized with {newDummy._pDummyId} id!");
+        _playerDummies.Add(newDummy);
     }
 
     private void RemoveLoggedoutPlayer(uint playerId)
     {
-        Debug.Log($"Dummies  manager should remove player with id {playerId}");
-
         if (_playerDummies.Any(x => x._pDummyId == playerId))
-            {
-                var loggedOutPlayer = _playerDummies.First(x => x._pDummyId == playerId);
-                _playerDummies.Remove(loggedOutPlayer);
-                Destroy(loggedOutPlayer.gameObject);
-            }
+        {
+            var loggedOutPlayer = _playerDummies.First(x => x._pDummyId == playerId);
+            _playerDummies.Remove(loggedOutPlayer);
+            Destroy(loggedOutPlayer.gameObject);
+        }
+    }
+
+    private void InitializeWorldData(WorldData data)
+    {
+        foreach (var playerPosition in data.Players)
+        {
+            InitializeNewPlayer(playerPosition);
+        }
+
+        OnWorldDataInitialized?.Invoke();
     }
 }
