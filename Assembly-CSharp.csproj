@@ -103,6 +103,7 @@
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\CommonSrc\CRC32.cs" />
     <Compile Include="Assets\Spestera_Net\Managers\Net_Dummies_Manager.cs" />
     <Compile Include="Assets\Scripts\Chunks\WorldGenerator.cs" />
+    <Compile Include="Assets\Scripts\Base\BaseMotionAnimationTriggers.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Detail_Mask_Generator.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\Zlib.cs" />
     <Compile Include="Assets\Spestera_Net\Protocol\ByteCompressor.cs" />
@@ -127,7 +128,6 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\Spestera_Net\Utils\Ionic\Zlib\LICENSE.jzlib.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-    <None Include="Assets\SzarkWater.shader" />
     <None Include="Assets\Spestera_Net\Utils\Ionic\Zlib\License.zlib.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />

@@ -20,9 +20,7 @@ public class Net_Dummies_Manager : MonoBehaviour
 
     private void UpdateDummiesTransform(Heartbeat hb)
     {
-
-            UpdatePlayerDummiesTransform(hb.Players);
-
+        UpdatePlayerDummiesTransform(hb.Players);
     }
 
     private void UpdatePlayerDummiesTransform(RepeatedField<PlayerPosition> players)
@@ -30,11 +28,11 @@ public class Net_Dummies_Manager : MonoBehaviour
             foreach (var playerData in players)
             {
                 var pdummy = _playerDummies.Find(x => x._pDummyId == playerData.PlayerId);
-                if (pdummy != null)
-                {
-                    pdummy.SetTargetPosition(playerData);
-                }
+            if (pdummy != null)
+            {
+                pdummy.SetTargetPosition(playerData);
             }
+        }
 
     }
 

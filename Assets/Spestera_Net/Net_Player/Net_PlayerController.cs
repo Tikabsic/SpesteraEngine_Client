@@ -12,18 +12,25 @@ public class Net_PlayerController : MonoBehaviour
     [SerializeField] float gravity = 9.8f;
     [SerializeField] float rotationSpeed = 10f;
 
+
+    //Transform handling properties
     private CharacterController characterController;
-    [SerializeField] private Vector3 movementDirection;
+    private Vector3 movementDirection;
     private Vector3 _lastPosition;
-    [SerializeField]private Vector3 _lastCorrectPosition;
+    private Vector3 _lastCorrectPosition;
     private Vector3 _initialCorrectPosition;
 
+
+    //Bytes calculation properties
     private int bytesSent;
     private float totalBytesSent;
     private int byteCounter;
     private float lastSentTime;
-    public float averageBytesPerSecond;
+    [SerializeField]private float averageBytesPerSecond;
 
+
+    //Base motion animation properites
+    public bool _isRunning;
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -66,6 +73,7 @@ public class Net_PlayerController : MonoBehaviour
 
             _lastPosition = transform.position;
             characterController.Move(finalMove * Time.fixedDeltaTime);
+            _isRunning = characterController.velocity.magnitude > 0.01f;
         }
 
         Vector3 gravityMove = -transform.up * gravity;
@@ -111,7 +119,7 @@ public class Net_PlayerController : MonoBehaviour
         int messageLength = wrapper.ToByteArray().Length;
         CalculateBytes(messageLength);
 
-        Net_ConnectionHandler.Instance.SendSpesteraMessage_TCP(wrapper);
+        Net_ConnectionHandler.Instance.SendSpesteraMessage_TCP(wrapper, false);
         movementDirection = Vector3.zero;
     }
 
@@ -164,7 +172,6 @@ public class Net_PlayerController : MonoBehaviour
 
                 if (characterController.transform.position == correctTransform)
                 {
-                    Debug.Log("first correct");
                     return;
                 }
 

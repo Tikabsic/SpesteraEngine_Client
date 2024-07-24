@@ -11,10 +11,22 @@ public class Player_Dummy : MonoBehaviour
 
     private CharacterController _characterController;
 
+
+    //Base motion animations handling
+    Animator _animator;
+    [SerializeField] private bool _isRunning;
+    [SerializeField] private bool _isPlaying;
+    [SerializeField] private bool _isIdle;
+
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
+        _animator = GetComponentInChildren<Animator>();
         targetRotation = transform.rotation;
+
+        _isPlaying = false;
+        _isIdle = true;
+
     }
 
     public void SetDummyTransform()
@@ -42,6 +54,14 @@ public class Player_Dummy : MonoBehaviour
 
                 _characterController.Move(moveDirection);
             }
+            _isRunning = direction.magnitude > 0.01f;
+        }
+        else
+        {
+            if (_isRunning)
+            {
+                _isRunning = false;
+            }
         }
     }
 
@@ -54,5 +74,30 @@ public class Player_Dummy : MonoBehaviour
     private void FixedUpdate()
     {
         SetDummyTransform();
+        UpdateMotionAnimations();
+    }
+
+    private void UpdateMotionAnimations()
+    {
+        if (_isRunning)
+        {
+            if (!_isPlaying)
+            {
+                _animator.SetBool("_isRunning", true);
+                _isPlaying = true;
+                _isIdle = false;        
+            }
+}
+
+        if (!_isRunning)
+        {
+            if (!_isIdle)
+            {
+                _animator.SetBool("_isRunning", false);
+                _isIdle = true;
+                _isPlaying = false;
+            }
+        }
+
     }
 }

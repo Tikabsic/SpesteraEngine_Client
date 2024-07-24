@@ -137,7 +137,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         }
     }
 
-    public async void SendSpesteraMessage_TCP(Wrapper wrapper)
+    public async void SendSpesteraMessage_TCP(Wrapper wrapper, bool isCompressed)
     {
         try
         {
@@ -146,8 +146,17 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
                 _tcpClient = new TcpClient();
                 await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIp), _serverPort_TCP);
             }
+
+            if (isCompressed)
+            {
+                var compressedData = ByteCompressor.CompressData(wrapper.ToByteArray());
+                await _tcpClient.GetStream().WriteAsync(compressedData, 0, compressedData.Length);
+            }
+            else
+            {
             byte[] data = wrapper.ToByteArray();
             await _tcpClient.GetStream().WriteAsync(data, 0, data.Length);
+            }
         }
         catch (Exception ex)
         {
@@ -196,12 +205,20 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         }
     }
 
-    public async void SendSpesteraMessage_UDP(Wrapper wrapper)
+    public async void SendSpesteraMessage_UDP(Wrapper wrapper, bool isCompressed)
     {
-        var data = wrapper.ToByteArray();
         try
         {
-            await _udpClient.SendAsync(data, data.Length, _serverIp, _serverPort_UDP);
+            if (isCompressed)
+            {
+                var compressedData = ByteCompressor.CompressData(wrapper.ToByteArray());
+                await _udpClient.SendAsync(compressedData, compressedData.Length, _serverIp, _serverPort_UDP);
+            }
+            else
+            {
+                var data = wrapper.ToByteArray();
+                await _udpClient.SendAsync(data, data.Length, _serverIp, _serverPort_UDP);
+            }
         }
         catch (Exception ex)
         {
@@ -241,8 +258,8 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         logoutWrapper.Type = Wrapper.Types.MessageType.Clientlogout;
         logoutWrapper.Payload = logoutMessage.ToByteString();
 
-        SendSpesteraMessage_TCP(logoutWrapper);
-        SendSpesteraMessage_UDP(logoutWrapper);
+        SendSpesteraMessage_TCP(logoutWrapper, false);
+        SendSpesteraMessage_UDP(logoutWrapper, false);
     }
 
     #endregion
