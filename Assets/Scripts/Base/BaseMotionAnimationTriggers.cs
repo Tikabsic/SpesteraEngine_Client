@@ -22,7 +22,7 @@ public class BaseMotionAnimationTriggers : MonoBehaviour
         _isIdle = true;
     }
 
-    void FixedUpdate()
+    void Update()
     {
         _isRunning = _controller._isRunning;
         UpdateMotionAnimations();
@@ -48,7 +48,6 @@ public class BaseMotionAnimationTriggers : MonoBehaviour
                 _animator.SetBool("_isRunning", false);
                 _isIdle = true;
                 _isPlaying = false;
-                Debug.Log("_isIdle");
             }
         }
 

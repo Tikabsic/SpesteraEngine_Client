@@ -43,7 +43,7 @@ public class Net_PlayerController : MonoBehaviour
         StartCoroutine(SendPlayerTransformCoroutine());
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (characterController.isGrounded)
         {
@@ -67,17 +67,19 @@ public class Net_PlayerController : MonoBehaviour
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
 
-            movementDirection += moveDirection;
+            movementDirection += moveDirection * Time.deltaTime;
 
-            Vector3 finalMove = moveDirection * speed;
+            Vector3 finalMove = moveDirection * speed * Time.deltaTime;
 
             _lastPosition = transform.position;
-            characterController.Move(finalMove * Time.fixedDeltaTime);
-            _isRunning = characterController.velocity.magnitude > 0.01f;
+            characterController.Move(finalMove);
+            _isRunning = characterController.velocity.magnitude > 0f;
         }
 
         Vector3 gravityMove = -transform.up * gravity;
         characterController.Move(gravityMove * Time.fixedDeltaTime);
+
+        UpdateAverageBytesPerSecond();
     }
 
     public float SendPositionFrequency;
@@ -129,11 +131,6 @@ public class Net_PlayerController : MonoBehaviour
         byteCounter++;
     }
 
-    private void Update()
-    {
-        UpdateAverageBytesPerSecond();
-    }
-
     private void UpdateAverageBytesPerSecond()
     {
         if (Time.time - lastSentTime >= 1f)
@@ -155,7 +152,7 @@ public class Net_PlayerController : MonoBehaviour
     }
 
     private Vector3 lastReceivedPosition;
-    private float interpolationFactor = 0.1f;
+    private float interpolationFactor = 0.2f;
     public Vector3 interpolatedPosition;
     public int badPositionConuter;
     [SerializeField] private int maximumLostPositions;

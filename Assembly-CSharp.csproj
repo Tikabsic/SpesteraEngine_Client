@@ -103,6 +103,7 @@
     <Compile Include="Assets\Spestera_Net\Protocol\NetworkProtocol.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\CommonSrc\CRC32.cs" />
     <Compile Include="Assets\Spestera_Net\Managers\Net_Dummies_Manager.cs" />
+    <Compile Include="Assets\Spestera_Net\Net_Base\Net_AnimationController.cs" />
     <Compile Include="Assets\Scripts\Chunks\WorldGenerator.cs" />
     <Compile Include="Assets\Scripts\Base\BaseMotionAnimationTriggers.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Detail_Mask_Generator.cs" />

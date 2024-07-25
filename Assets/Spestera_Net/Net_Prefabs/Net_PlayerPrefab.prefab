@@ -2006,7 +2006,7 @@ CharacterController:
   m_Radius: 0.4
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.005
   m_MinMoveDistance: 0.0001
   m_Center: {x: 0, y: 0.88, z: 0}
 --- !u!114 &3553376955067104702
@@ -2024,9 +2024,8 @@ MonoBehaviour:
   speed: 0
   gravity: 9.8
   rotationSpeed: 10
-  movementDirection: {x: 0, y: 0, z: 0}
-  _lastCorrectPosition: {x: 0, y: 0, z: 0}
   averageBytesPerSecond: 0
+  _isRunning: 0
   SendPositionFrequency: 0.04
   interpolatedPosition: {x: 0, y: 0, z: 0}
   badPositionConuter: 0

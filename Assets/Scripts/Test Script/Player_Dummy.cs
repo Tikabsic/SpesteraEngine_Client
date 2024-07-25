@@ -34,7 +34,7 @@ public class Player_Dummy : MonoBehaviour
         if (_targetPosition != Vector3.zero)
         {
             var direction = _targetPosition - transform.position;
-            var moveDistance = movementspeed * Time.fixedDeltaTime;
+            var moveDistance = movementspeed * Time.deltaTime;
 
             if (direction.magnitude <= moveDistance)
             {
@@ -49,12 +49,12 @@ public class Player_Dummy : MonoBehaviour
                 if (lookDirection != Vector3.zero)
                 {
                     Quaternion newRotation = Quaternion.LookRotation(lookDirection);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, newRotation, rotationSpeed * Time.fixedDeltaTime);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, newRotation, rotationSpeed * Time.deltaTime);
                 }
 
                 _characterController.Move(moveDirection);
             }
-            _isRunning = direction.magnitude > 0.01f;
+            _isRunning = true;
         }
         else
         {
@@ -71,7 +71,7 @@ public class Player_Dummy : MonoBehaviour
         _targetPosition = targetTransform;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         SetDummyTransform();
         UpdateMotionAnimations();

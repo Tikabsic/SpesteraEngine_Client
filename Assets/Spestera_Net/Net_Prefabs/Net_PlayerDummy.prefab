@@ -57,7 +57,7 @@ CharacterController:
   m_Radius: 0.4
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.005
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.88, z: 0}
 --- !u!114 &9048842638046198875
@@ -75,6 +75,9 @@ MonoBehaviour:
   _pDummyId: 0
   rotationSpeed: 5
   movementspeed: 5
+  _isRunning: 0
+  _isPlaying: 0
+  _isIdle: 0
 --- !u!1001 &5234383938416802715
 PrefabInstance:
   m_ObjectHideFlags: 0

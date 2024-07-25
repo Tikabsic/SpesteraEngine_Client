@@ -250,7 +250,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 
     #region Logout Messages
 
-    private void SendSpesteraLogoutMessage_Both()
+    private void SendSpesteraLogoutMessage()
     {
         ClientLogout logoutMessage = new ClientLogout();
         logoutMessage.PlayerId = NetworkCredits.PlayerId;
@@ -260,7 +260,6 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         logoutWrapper.Payload = logoutMessage.ToByteString();
 
         SendSpesteraMessage_TCP(logoutWrapper, false);
-        SendSpesteraMessage_UDP(logoutWrapper, false);
     }
 
     #endregion
@@ -268,7 +267,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     public void CloseConnection()
     {
         OnClientLogout?.Invoke();
-        SendSpesteraLogoutMessage_Both();
+        SendSpesteraLogoutMessage();
         _tcpClient.Close();
         _udpClient.Close();
     }
