@@ -35,8 +35,11 @@ git clone https://github.com/Tikabsic/SpesteraEngine_Client.git
 * Click "Add" and select the cloned repository folder.
 
 <p>4. Install Dependencies</p>
+
 * install Cinemachine
+
 * install TextMeshPro
+
 * put this in first line of manifest.json file.
 ```
     "com.gameworkstore.googleprotobufunity": "https://github.com/GameWorkstore/google-protobuf-unity.git#3.15.2012",
