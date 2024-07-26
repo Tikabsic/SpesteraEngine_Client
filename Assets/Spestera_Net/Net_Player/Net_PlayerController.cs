@@ -15,11 +15,12 @@ public class Net_PlayerController : MonoBehaviour
 
     //Transform handling properties
     private CharacterController characterController;
-    private Vector3 movementDirection;
+    //private Vector3 movementDirection;
     private Vector3 _lastPosition;
     private Vector3 _lastCorrectPosition;
     private Vector3 _initialCorrectPosition;
 
+    private Vector3 movementDirection;
 
     //Bytes calculation properties
     private int bytesSent;
@@ -67,15 +68,14 @@ public class Net_PlayerController : MonoBehaviour
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
 
-            movementDirection += moveDirection * Time.deltaTime;
-
             Vector3 finalMove = moveDirection * speed * Time.deltaTime;
 
             _lastPosition = transform.position;
             characterController.Move(finalMove);
+            movementDirection += (transform.position - _lastPosition) / speed;
+
             _isRunning = characterController.velocity.magnitude > 0f;
         }
-
         Vector3 gravityMove = -transform.up * gravity;
         characterController.Move(gravityMove * Time.fixedDeltaTime);
 
