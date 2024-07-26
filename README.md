@@ -36,7 +36,10 @@ git clone https://github.com/Tikabsic/SpesteraEngine_Client.git
 
 <p>4. Install Dependencies</p>
 
-* Ensure you have the necessary packages installed via Unity's Package Manager or include them in your Packages/manifest.json file.
+* put this in first line of manifest.json file.
+```
+    "com.gameworkstore.googleprotobufunity": "https://github.com/GameWorkstore/google-protobuf-unity.git#3.15.2012",
+```
 
 <h2>Building</h2>
 
