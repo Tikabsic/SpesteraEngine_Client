@@ -17,7 +17,6 @@ public class Net_Dummies_Manager : MonoBehaviour
 
     private void Awake()
     {
-        DontDestroyOnLoad(this);
         Net_HeartbeatHandler.Instance.OnPositionUpdate_event += UpdateDummiesTransform;
         Net_MessageInterpreter.OnOtherPlayerLogout += RemoveLoggedoutPlayer;
         Net_MessageInterpreter.OnOtherPlayerLogin += InitializeNewPlayer;

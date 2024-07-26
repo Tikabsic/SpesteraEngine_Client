@@ -122,7 +122,6 @@
     <None Include="Assets\Spestera_Net\Utils\Ionic\BZip2\NOTICE.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
-    <None Include="Assets\test.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\Spestera_Net\Utils\Ionic\Binaries\Debug\Ionic.Zip.Unity.XML" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
