@@ -21,6 +21,7 @@ public class Net_PlayerController : MonoBehaviour
     private Vector3 _initialCorrectPosition;
 
     private Vector3 movementDirection;
+    private float epsilon = 0.0001f;
 
     //Bytes calculation properties
     private int bytesSent;
@@ -46,8 +47,7 @@ public class Net_PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (characterController.isGrounded)
-        {
+
             Vector3 camForward = Camera.main.transform.forward;
             Vector3 camRight = Camera.main.transform.right;
 
@@ -68,16 +68,16 @@ public class Net_PlayerController : MonoBehaviour
                 transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             }
 
-            Vector3 finalMove = moveDirection * speed * Time.deltaTime;
+            Vector3 gravityMove = -transform.up * gravity;
+
+            Vector3 finalMove = (moveDirection + gravityMove) * speed * Time.deltaTime;
 
             _lastPosition = transform.position;
             characterController.Move(finalMove);
+
             movementDirection += (transform.position - _lastPosition) / speed;
 
-            _isRunning = characterController.velocity.magnitude > 0f;
-        }
-        Vector3 gravityMove = -transform.up * gravity;
-        characterController.Move(gravityMove * Time.fixedDeltaTime);
+        _isRunning = characterController.velocity.magnitude > 0f;
 
         UpdateAverageBytesPerSecond();
     }
@@ -105,6 +105,12 @@ public class Net_PlayerController : MonoBehaviour
 
     private void SendPlayerTransform()
     {
+
+        if (Mathf.Abs(movementDirection.y) < epsilon || Mathf.Abs(movementDirection.y) < -epsilon)
+        {
+            movementDirection.y = 0;
+        }
+
         PlayerPosition playerPosition = new PlayerPosition
         {
             PositionX = movementDirection.x != 0 ? movementDirection.x : 0,
