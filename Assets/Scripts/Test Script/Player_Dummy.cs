@@ -31,6 +31,7 @@ public class Player_Dummy : MonoBehaviour
 
     public void SetDummyTransform()
     {
+        _isRunning = _characterController.velocity.magnitude > 0;
         if (_targetPosition != Vector3.zero)
         {
             var direction = _targetPosition - transform.position;
@@ -54,15 +55,16 @@ public class Player_Dummy : MonoBehaviour
 
                 _characterController.Move(moveDirection);
             }
-            _isRunning = true;
         }
-        else
-        {
-            if (_isRunning)
-            {
-                _isRunning = false;
-            }
-        }
+        //    _isRunning = true;
+        //}
+        //else
+        //{
+        //    if (_isRunning)
+        //    {
+        //        _isRunning = false;
+        //    }
+        //}
     }
 
     public void SetTargetPosition(PlayerPosition transform)

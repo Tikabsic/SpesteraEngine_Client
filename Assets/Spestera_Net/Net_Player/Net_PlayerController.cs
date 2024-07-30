@@ -1,8 +1,8 @@
 using Google.Protobuf;
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 [RequireComponent(typeof(CharacterController))]
 public class Net_PlayerController : MonoBehaviour
@@ -22,6 +22,7 @@ public class Net_PlayerController : MonoBehaviour
 
     private Vector3 movementDirection;
     private float epsilon = 0.0001f;
+    private bool _isGathering = true;
 
     //Bytes calculation properties
     private int bytesSent;
@@ -47,39 +48,61 @@ public class Net_PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!_isGathering)
+        {
+            return;
+        }
+        Vector3 camForward = Camera.main.transform.forward;
+        Vector3 camRight = Camera.main.transform.right;
 
-            Vector3 camForward = Camera.main.transform.forward;
-            Vector3 camRight = Camera.main.transform.right;
+        Vector3 camForwardXZ = Vector3.ProjectOnPlane(camForward, Vector3.up).normalized;
 
-            Vector3 camForwardXZ = Vector3.ProjectOnPlane(camForward, Vector3.up).normalized;
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
 
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
+        Vector3 moveDirectionXZ = camForwardXZ * vertical + camRight * horizontal;
+        moveDirectionXZ.Normalize();
 
-            Vector3 moveDirectionXZ = camForwardXZ * vertical + camRight * horizontal;
-            moveDirectionXZ.Normalize();
+        Vector3 moveDirection = new Vector3(moveDirectionXZ.x, 0f, moveDirectionXZ.z);
+        moveDirection.Normalize();
 
-            Vector3 moveDirection = new Vector3(moveDirectionXZ.x, 0f, moveDirectionXZ.z);
-            moveDirection.Normalize();
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
 
-            if (moveDirection != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            }
+        Vector3 gravityMove = -transform.up * gravity;
 
-            Vector3 gravityMove = -transform.up * gravity;
+        Vector3 finalMove = (moveDirection + gravityMove) * speed * Time.deltaTime;
 
-            Vector3 finalMove = (moveDirection + gravityMove) * speed * Time.deltaTime;
+        //Vector3 roundedMove = new Vector3(
+        //    Mathf.Round(finalMove.x * 100) / 100,
+        //    finalMove.y,
+        //    Mathf.Round(finalMove.z * 100) / 100);
 
-            _lastPosition = transform.position;
-            characterController.Move(finalMove);
+        _lastPosition = transform.position;
+        characterController.Move(finalMove);
 
-            movementDirection += (transform.position - _lastPosition) / speed;
+        movementDirection += (transform.position - _lastPosition) / speed;
 
         _isRunning = characterController.velocity.magnitude > 0f;
 
         UpdateAverageBytesPerSecond();
+    }
+
+    [SerializeField] private int _roundMultiplier;
+    public void RoundVectorToByteValues(ref Vector3 movementVector, int decimalPoints)
+    {
+
+        movementVector.x = RoundToDecimalPlaces(ref movementVector.x, decimalPoints) * _roundMultiplier;
+        movementVector.z = RoundToDecimalPlaces(ref movementVector.z, decimalPoints) * _roundMultiplier;
+    }
+
+    public float RoundToDecimalPlaces(ref float number, int decimalPlaces)
+    {
+        float multiplier = Mathf.Pow(10, decimalPlaces);
+        return Mathf.Round(number * multiplier) / multiplier;
     }
 
     public float SendPositionFrequency;
@@ -90,8 +113,11 @@ public class Net_PlayerController : MonoBehaviour
         {
             if (movementDirection != Vector3.zero)
             {
+                _isGathering = false;
+                RoundVectorToByteValues(ref movementDirection, 4);
                 SendPlayerTransform();
                 movementDirection = Vector3.zero;
+                _isGathering = true;
             }
 
             yield return new WaitForSecondsRealtime(SendPositionFrequency);
@@ -105,8 +131,6 @@ public class Net_PlayerController : MonoBehaviour
 
     private void SendPlayerTransform()
     {
-        Debug.Log(movementDirection);
-
         if (Mathf.Abs(movementDirection.y) < epsilon || Mathf.Abs(movementDirection.y) < -epsilon)
         {
             movementDirection.y = 0;
@@ -114,9 +138,9 @@ public class Net_PlayerController : MonoBehaviour
 
         PlayerPosition playerPosition = new PlayerPosition
         {
-            PositionX = movementDirection.x != 0 ? movementDirection.x : 0,
+            PositionX = (sbyte)movementDirection.x,
             PositionY = movementDirection.y != 0 ? movementDirection.y : 0,
-            PositionZ = movementDirection.z != 0 ? movementDirection.z : 0,
+            PositionZ = (sbyte)movementDirection.z
         };
 
         Wrapper wrapper = new Wrapper
@@ -127,6 +151,9 @@ public class Net_PlayerController : MonoBehaviour
 
         int messageLength = wrapper.ToByteArray().Length;
         CalculateBytes(messageLength);
+
+        Vector3 testpos = transform.position;
+        Debug.Log($"should be at : {testpos + ((movementDirection / _roundMultiplier))} // x y z {(float)playerPosition.PositionX / 1000}, {(float)playerPosition.PositionY / 1000}, {(float)playerPosition.PositionZ / 1000}");
 
         Net_ConnectionHandler.Instance.SendSpesteraMessage_TCP(wrapper, false);
         movementDirection = Vector3.zero;
