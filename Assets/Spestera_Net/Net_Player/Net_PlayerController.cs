@@ -105,6 +105,7 @@ public class Net_PlayerController : MonoBehaviour
 
     private void SendPlayerTransform()
     {
+        Debug.Log(movementDirection);
 
         if (Mathf.Abs(movementDirection.y) < epsilon || Mathf.Abs(movementDirection.y) < -epsilon)
         {
