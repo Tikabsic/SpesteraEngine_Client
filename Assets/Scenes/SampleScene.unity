@@ -1987,79 +1987,6 @@ MonoBehaviour:
   terrain: {fileID: 963967441}
   heightmapThreshold: 0
   smooth: 0
---- !u!1001 &2133820964
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 101.31513
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 104.07137
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4744874796672021602, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4849454347576616153, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_Name
-      value: Net_PlayerDummy
-      objectReference: {fileID: 0}
-    - target: {fileID: 5905520318888380539, guid: a3464a22b2f998f49b473e9dfec9ad63,
-        type: 3}
-      propertyPath: m_SkinWidth
-      value: 0.005001
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a3464a22b2f998f49b473e9dfec9ad63, type: 3}
 --- !u!1001 &2153681324992120436
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2301,7 +2228,7 @@ PrefabInstance:
     - target: {fileID: 3553376955067104702, guid: 45000566720ca1a4b9b58246ced11ca8,
         type: 3}
       propertyPath: SendPositionFrequency
-      value: 0.05
+      value: 0.08
       objectReference: {fileID: 0}
     - target: {fileID: 3553376955067104702, guid: 45000566720ca1a4b9b58246ced11ca8,
         type: 3}
@@ -2614,5 +2541,4 @@ SceneRoots:
   - {fileID: 1651085552}
   - {fileID: 1927202788}
   - {fileID: 1123404799}
-  - {fileID: 2133820964}
   - {fileID: 424686959}

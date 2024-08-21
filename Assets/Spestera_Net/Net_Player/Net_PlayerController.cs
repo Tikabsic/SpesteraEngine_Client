@@ -77,7 +77,7 @@ public class Net_PlayerController : MonoBehaviour
 
             movementDirection += (transform.position - _lastPosition) / speed;
 
-        _isRunning = characterController.velocity.magnitude > 0f;
+        _isRunning = characterController.velocity.magnitude > 0.1f;
 
         UpdateAverageBytesPerSecond();
     }
@@ -105,8 +105,6 @@ public class Net_PlayerController : MonoBehaviour
 
     private void SendPlayerTransform()
     {
-        Debug.Log(movementDirection);
-
         if (Mathf.Abs(movementDirection.y) < epsilon || Mathf.Abs(movementDirection.y) < -epsilon)
         {
             movementDirection.y = 0;
