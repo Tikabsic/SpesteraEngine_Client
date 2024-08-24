@@ -2,92 +2,97 @@ using Google.Protobuf;
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UIElements;
-
 
 public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 {
     //Events Base
     public event Action OnClientLogout;
-    public event Action OnClientLogin;
+    public event Action OnPlayerLogout;
 
     //Events UI 
-    public event Action<int> OnBandwidthRecivedUDP;
-    public event Action<int> OnBandwidthRecivedTCP;
-
+    public event Action<int> OnBandwidthRecivedZS;
+    public event Action<int> OnBandwidthRecivedGS;
 
     //Base props
     private string _serverIp = "";
-    private int _serverPort_UDP = 0;
-    private int _serverPort_TCP = 0;
-    private byte[] buffer = new byte[512 * 1024];
+    private int _serverPort_GS = 0;
+    private int _serverPort_ZS = 0;
+    private byte[] _gsBuffer = new byte[512 * 1024];
+    private byte[] _zsBuffer = new byte[512 * 1024];
 
-    //TCP client
-    private NetworkStream stream;
-    private System.Net.Sockets.TcpClient _tcpClient;
-    private bool _isConnected;
+    //GS client
+    private NetworkStream _streamGS;
+    private System.Net.Sockets.TcpClient _tcpClientGS;
 
-    //UDP client
-    private UdpClient _udpClient;
+    //ZS client
+    private NetworkStream _streamZS;
+    private System.Net.Sockets.TcpClient _tcpClientZS;
+
+    //Logic gates
+    private bool _isDisconnecting = false;
 
     //Message interpreter
-    private Net_MessageInterpreter _messageInterpreter;
+    private Net_MessageInterpreterGS _messageInterpreterGS;
+    private Net_MessageInterpreterZS _messageInterpreterZS;
 
-    public async void BeginConnect(string serverIp, int tcpport, int udpport)
+    System.Diagnostics.Stopwatch _stopwatch = new System.Diagnostics.Stopwatch();
+
+    public async void ConnectToGameServer(string serverIp, int gsport, int zsport)
     {
         // Preload basic classes
         _serverIp = serverIp;
-        _serverPort_UDP = udpport;
-        _serverPort_TCP = tcpport;
-        _messageInterpreter = new Net_MessageInterpreter();
+        _serverPort_GS = gsport;
+        _serverPort_ZS = zsport;
+        _messageInterpreterGS = new Net_MessageInterpreterGS();
 
         // TCP client preparation
-        _tcpClient = new TcpClient();
+        _tcpClientGS = new TcpClient();
+        Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(new IPEndPoint(IPAddress.Any, 0));
+        _tcpClientGS.Client = socket;
+
+        await _tcpClientGS.ConnectAsync(_serverIp, _serverPort_GS);
+        _streamGS = _tcpClientGS.GetStream();
+        _ = Task.Run(() => ReceiveSpesteraMessages_GameServer());
+    }
+
+    public async void ConnectToZoneServerServer()
+    {
+        _messageInterpreterZS = new Net_MessageInterpreterZS();
+
+        // TCP client preparation
+        _tcpClientZS = new TcpClient();
 
         Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         socket.Bind(new IPEndPoint(IPAddress.Any, 0));
-        _tcpClient.Client = socket;
+        _tcpClientZS.Client = socket;
 
-        await _tcpClient.ConnectAsync(serverIp, tcpport);
-        stream = _tcpClient.GetStream();
-        _ = Task.Run(() => ReceiveSpesteraMessages_TCP());
-
-        if (_tcpClient.Connected)
-        {
-            _isConnected = true;
-            OnClientLogin?.Invoke();
-        }
+        await _tcpClientZS.ConnectAsync(_serverIp, _serverPort_ZS);
+        _streamZS = _tcpClientZS.GetStream();
+        _ = Task.Run(() => ReceiveSpesteraMessages_ZoneServer());
     }
 
-    public void ConnectToUDPServer()
+    #region GameServer Messages
+    private async Task ReceiveSpesteraMessages_GameServer()
     {
-        _udpClient = new UdpClient(0);
-        _ = Task.Run(() => ReceiveSpesteraMessages_UDP());
-
-        SendSpesteraLoginRequest_UDP();
-    }
-
-    #region TCP Messages
-    private async Task ReceiveSpesteraMessages_TCP()
-    {
-        while (true)
+        
+        while(!_isDisconnecting)
         {
             try
             {
-                var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                var bytesRead = await _streamGS.ReadAsync(_gsBuffer, 0, _gsBuffer.Length);
                 if (bytesRead > 0)
                 {
-
-                    OnBandwidthRecivedTCP?.Invoke(bytesRead);
+                    OnBandwidthRecivedGS?.Invoke(bytesRead);
 
                     try
                     {
-                        Wrapper wrapper = Wrapper.Parser.ParseFrom(buffer, 0, bytesRead);
-                        _messageInterpreter.HandleWrapper(wrapper);
+                        GSWrapper wrapper = GSWrapper.Parser.ParseFrom(_gsBuffer, 0, bytesRead);
+                        _messageInterpreterGS.HandleWrapper(wrapper);
                     }
                     catch (InvalidProtocolBufferException ex)
                     {
@@ -95,13 +100,14 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 
                     try
                     {
-                        byte[] decompressedData = TryDecompress(buffer);
+                        byte[] decompressedData = TryDecompress(_gsBuffer);
                         if (decompressedData != null)
                         {
-                            _messageInterpreter.InterpretMessage(decompressedData, decompressedData.Length);
+                            _messageInterpreterGS.InterpretMessage(decompressedData, decompressedData.Length);
                         }
                         else
                         {
+
                         }
                     }
                     catch (InvalidProtocolBufferException ex)
@@ -137,26 +143,22 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         }
     }
 
-    public async void SendSpesteraMessage_TCP(Wrapper wrapper, bool isCompressed)
+
+
+    public async void SendSpesteraMessage_GameServer(GSWrapper wrapper, bool isCompressed)
     {
         try
         {
-            if (_tcpClient == null)
-            {
-                _tcpClient = new TcpClient();
-                await _tcpClient.ConnectAsync(IPAddress.Parse(_serverIp), _serverPort_TCP);
-            }
-
             if (isCompressed)
             {
                 var compressedData = ByteCompressor.CompressData(wrapper.ToByteArray());
-                await _tcpClient.GetStream().WriteAsync(compressedData, 0, compressedData.Length);
+                await _tcpClientGS.GetStream().WriteAsync(compressedData, 0, compressedData.Length);
                 Debug.Log($"sent compressed data {compressedData.Length} <- lenght");
             }
             else
             {
-            byte[] data = wrapper.ToByteArray();
-                await _tcpClient.GetStream().WriteAsync(data, 0, data.Length);
+                byte[] data = wrapper.ToByteArray();
+                await _tcpClientGS.GetStream().WriteAsync(data, 0, data.Length);
             }
         }
         catch (Exception ex)
@@ -167,85 +169,81 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     #endregion
 
     #region UDP Messages
-    private async Task ReceiveSpesteraMessages_UDP()
+    private async Task ReceiveSpesteraMessages_ZoneServer()
     {
-        while (true)
+        while (!_isDisconnecting)
         {
-
-            UdpReceiveResult result = await _udpClient.ReceiveAsync();
-
-            if (result.Buffer.Length > 0)
-            {
-                OnBandwidthRecivedUDP?.Invoke(result.Buffer.Length);
-            }
-
             try
             {
-                Wrapper wrapper = Wrapper.Parser.ParseFrom(result.Buffer, 0, result.Buffer.Length);
-                _messageInterpreter.HandleWrapper(wrapper);
+                var bytesRead = await _streamZS.ReadAsync(_zsBuffer, 0, _zsBuffer.Length);
+                if (bytesRead > 0)
+                {
+                    OnBandwidthRecivedGS?.Invoke(bytesRead);
+
+                    try
+                    {
+                        ZSWrapper wrapper = ZSWrapper.Parser.ParseFrom(_zsBuffer, 0, bytesRead);
+                        _messageInterpreterZS.HandleWrapper(wrapper);
+                    }
+                    catch (InvalidProtocolBufferException ex)
+                    {
+
+                    }
+
+                    try
+                    {
+                        byte[] decompressedData = TryDecompress(_zsBuffer);
+                        if (decompressedData != null)
+                        {
+                            _messageInterpreterZS.InterpretMessage(decompressedData, decompressedData.Length);
+                        }
+                        else
+                        {
+                        }
+                    }
+                    catch (InvalidProtocolBufferException ex)
+                    {
+                        Debug.LogError($"Decompression error: {ex.Message}");
+                    }
+                }
             }
-            catch (InvalidProtocolBufferException ex)
+            catch (IOException ex)
             {
+                Debug.LogError($"IO Exception: {ex.Message}");
+                break;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception: {ex.Message}");
+                break;
             }
 
-            try
-            {
-                byte[] decompressedData = TryDecompress(result.Buffer);
-                if (decompressedData != null)
-                {
-                    _messageInterpreter.InterpretMessage(decompressedData, decompressedData.Length);
-                }
-                else
-                {
-                }
-            }
-            catch (InvalidProtocolBufferException ex)
-            {
-                Debug.LogError($"Decompression error: {ex.Message}");
-            }
+            await Task.Delay(1);
         }
     }
-
-    public async void SendSpesteraMessage_UDP(Wrapper wrapper, bool isCompressed)
+    int msgcounter = 0;
+    public async void SendSpesteraMessage_ZoneServer(ZSWrapper wrapper, bool isCompressed)
     {
+
         try
         {
             if (isCompressed)
             {
                 var compressedData = ByteCompressor.CompressData(wrapper.ToByteArray());
-                await _udpClient.SendAsync(compressedData, compressedData.Length, _serverIp, _serverPort_UDP);
+                await _tcpClientZS.GetStream().WriteAsync(compressedData, 0, compressedData.Length);
             }
             else
             {
-                var data = wrapper.ToByteArray();
-                await _udpClient.SendAsync(data, data.Length, _serverIp, _serverPort_UDP);
+                byte[] data = wrapper.ToByteArray();
+                await _tcpClientZS.GetStream().WriteAsync(data, 0, data.Length);
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error sending UDP message: {ex.Message}");
+            Console.WriteLine($"Error while sending message : {ex.Message}");
         }
     }
 
-    public async void SendSpesteraLoginRequest_UDP()
-    {
-        Wrapper requestWrapper = new Wrapper();
-        RequestLogin request = new RequestLogin();
-        request.PlayerId = NetworkCredits.PlayerId;
-        requestWrapper.Type = Wrapper.Types.MessageType.Requestlogin;
-        requestWrapper.Payload = ByteString.CopyFrom(request.ToByteArray());
-
-        var data = requestWrapper.ToByteArray();
-
-        try
-        {
-            await _udpClient.SendAsync(data, data.Length, _serverIp, _serverPort_UDP);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error sending UDP message: {ex.Message}");
-        }
-    }
     #endregion
 
     #region Logout Messages
@@ -253,23 +251,44 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     private void SendSpesteraLogoutMessage()
     {
         ClientLogout logoutMessage = new ClientLogout();
-        logoutMessage.PlayerId = NetworkCredits.PlayerId;
+        PlayerOut logoutPlayer = new PlayerOut();
 
-        Wrapper logoutWrapper = new Wrapper();
-        logoutWrapper.Type = Wrapper.Types.MessageType.Clientlogout;
+        logoutMessage.PlayerId = NetworkCredits.PlayerId;
+        logoutPlayer.PlayerId = NetworkCredits.PlayerId;
+
+        GSWrapper logoutWrapper = new GSWrapper();
+        logoutWrapper.Type = GSWrapper.Types.MessageType.Clientlogout;
         logoutWrapper.Payload = logoutMessage.ToByteString();
 
-        SendSpesteraMessage_TCP(logoutWrapper, false);
+        ZSWrapper playerLogoutWrapper = new ZSWrapper();
+        playerLogoutWrapper.Type = ZSWrapper.Types.MessageType.Playerout;
+        playerLogoutWrapper.Payload = logoutPlayer.ToByteString();
+
+        SendSpesteraMessage_GameServer(logoutWrapper, false);
+        SendSpesteraMessage_ZoneServer(playerLogoutWrapper, false);
     }
 
     #endregion
 
     public void CloseConnection()
     {
+        if (_tcpClientGS.Connected)
+        {
+            _tcpClientGS.Close();
+        }
+        if (_tcpClientZS.Connected)
+        {
+            _tcpClientZS.Close();
+        }
+    }
+
+    public void LogoutFromGame()
+    {
         OnClientLogout?.Invoke();
+        _isDisconnecting = true;
         SendSpesteraLogoutMessage();
-        _tcpClient.Close();
-        _udpClient.Close();
+        _tcpClientGS.Close();
+        _tcpClientZS.Close();
     }
 
 }

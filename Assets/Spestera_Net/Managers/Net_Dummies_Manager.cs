@@ -18,9 +18,9 @@ public class Net_Dummies_Manager : MonoBehaviour
     private void Awake()
     {
         Net_HeartbeatHandler.Instance.OnPositionUpdate_event += UpdateDummiesTransform;
-        Net_MessageInterpreter.OnOtherPlayerLogout += RemoveLoggedoutPlayer;
-        Net_MessageInterpreter.OnOtherPlayerLogin += InitializeNewPlayer;
-        Net_MessageInterpreter.OnWorldDataRecived += InitializeWorldData;
+        Net_MessageInterpreterZS.OnOtherPlayerLogout += RemoveLoggedoutPlayer;
+        Net_MessageInterpreterZS.OnOtherPlayerLogin += InitializeNewPlayer;
+        Net_MessageInterpreterZS.OnWorldDataRecived += InitializeWorldData;
     }
 
     private void UpdateDummiesTransform(Heartbeat hb)
@@ -51,6 +51,10 @@ public class Net_Dummies_Manager : MonoBehaviour
 
     private void InitializeNewPlayer(PlayerInitialData data)
     {
+        if (_playerDummies.Any(x => x._pDummyId == data.PlayerId))
+        {
+            return;
+        }
 
         var newDummy = GameObject.Instantiate<Player_Dummy>(_playerDummyPrefab);
         newDummy._pDummyId = data.PlayerId;

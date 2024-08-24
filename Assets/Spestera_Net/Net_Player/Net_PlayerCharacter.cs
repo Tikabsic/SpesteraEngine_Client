@@ -6,7 +6,7 @@ public class Net_PlayerCharacter : MonoBehaviour
     private void Awake()
     {
         net_controller = GetComponent<Net_PlayerController>();
-        Net_MessageInterpreter.OnPlayerDataRecived += ProcessInitializeData;
+        Net_MessageInterpreterZS.OnPlayerDataRecived += ProcessInitializeData;
     }
 
     private void ProcessInitializeData(PlayerInitialData data)

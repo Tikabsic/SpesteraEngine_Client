@@ -1,5 +1,6 @@
 using Google.Protobuf;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,6 +8,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(CharacterController))]
 public class Net_PlayerController : MonoBehaviour
 {
+
     [Header("Settings")]
     [SerializeField] float speed;
     [SerializeField] float gravity = 9.8f;
@@ -15,10 +17,10 @@ public class Net_PlayerController : MonoBehaviour
 
     //Transform handling properties
     private CharacterController characterController;
-    //private Vector3 movementDirection;
     private Vector3 _lastPosition;
     private Vector3 _lastCorrectPosition;
     private Vector3 _initialCorrectPosition;
+    private bool _canMove;
 
     private Vector3 movementDirection;
     private float epsilon = 0.0001f;
@@ -37,17 +39,20 @@ public class Net_PlayerController : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         _lastPosition = transform.position;
+        movementDirection = Vector3.zero;
+        _canMove = true;
     }
 
     private void Start()
     {
         Net_HeartbeatHandler.Instance.OnPositionUpdate_event += ValidatePlayerPosition;
-        StartCoroutine(SendPlayerTransformCoroutine());
+        Net_MessageInterpreterZS.OnPlayerInitialized += InitializeMovement;
     }
 
     private void Update()
     {
-
+        if (_canMove)
+        {
             Vector3 camForward = Camera.main.transform.forward;
             Vector3 camRight = Camera.main.transform.right;
 
@@ -80,9 +85,16 @@ public class Net_PlayerController : MonoBehaviour
         _isRunning = characterController.velocity.magnitude > 0.1f;
 
         UpdateAverageBytesPerSecond();
+        }
+
     }
 
     public float SendPositionFrequency;
+
+    private void InitializeMovement()
+    {
+        StartCoroutine(SendPlayerTransformCoroutine());
+    }
 
     private IEnumerator SendPlayerTransformCoroutine()
     {
@@ -105,6 +117,11 @@ public class Net_PlayerController : MonoBehaviour
 
     private void SendPlayerTransform()
     {
+        if (float.IsNaN(movementDirection.x) || float.IsNaN(movementDirection.y) || float.IsNaN(movementDirection.z))
+        {
+            return;
+        }
+
         if (Mathf.Abs(movementDirection.y) < epsilon || Mathf.Abs(movementDirection.y) < -epsilon)
         {
             movementDirection.y = 0;
@@ -117,16 +134,16 @@ public class Net_PlayerController : MonoBehaviour
             PositionZ = movementDirection.z != 0 ? movementDirection.z : 0,
         };
 
-        Wrapper wrapper = new Wrapper
+        ZSWrapper wrapper = new ZSWrapper
         {
-            Type = Wrapper.Types.MessageType.Playerposition,
+            Type = ZSWrapper.Types.MessageType.Playerposition,
             Payload = playerPosition.ToByteString()
         };
 
         int messageLength = wrapper.ToByteArray().Length;
         CalculateBytes(messageLength);
 
-        Net_ConnectionHandler.Instance.SendSpesteraMessage_TCP(wrapper, false);
+        Net_ConnectionHandler.Instance.SendSpesteraMessage_ZoneServer(wrapper, false);
         movementDirection = Vector3.zero;
     }
 

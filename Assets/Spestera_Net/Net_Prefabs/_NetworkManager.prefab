@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6508408863826433040}
   m_Layer: 0
   m_Name: _NetworkManager
-  m_TagString: Untagged
+  m_TagString: NetworkManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -47,8 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ServerIP: 127.0.0.1
-  ServerPort_TCP: 7171
-  ServerPort_UDP: 7172
+  ServerPort_GS: 7171
+  ServerPort_ZS: 7172
 --- !u!114 &9057595265125749791
 MonoBehaviour:
   m_ObjectHideFlags: 0

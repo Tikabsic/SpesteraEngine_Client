@@ -8,6 +8,9 @@ TagManager:
   - Player Dummy
   - Monster Dummy
   - NPC Dummy
+  - Static_Object
+  - Net_MapObject
+  - NetworkManager
   layers:
   - Default
   - TransparentFX

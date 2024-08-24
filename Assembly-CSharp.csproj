@@ -60,6 +60,7 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.35f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Spestera_Net\Protocol\GSProtocol.cs" />
     <Compile Include="Assets\Scripts\Test Script\MOB_Dummy.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\ZlibBaseStream.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\ParallelDeflateOutputStream.cs" />
@@ -72,16 +73,16 @@
     <Compile Include="Assets\Spestera_Net\Net_Player\pcontroller.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BZip2InputStream.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BZip2OutputStream.cs" />
+    <Compile Include="Assets\Spestera_Net\Net_LoginModule\Net_LoginModule.cs" />
     <Compile Include="Assets\Scripts\Managers\CameraManager.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BZip2Compressor.cs" />
-    <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Seamless_Heightmap_Generator.cs" />
     <Compile Include="Assets\Spestera_Net\NetworkManager.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Load_Heightmap_From_Bitmap.cs" />
     <Compile Include="Assets\Spestera_Net\Net_Player\Net_PlayerCharacter.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zip Reduced\Properties\AssemblyInfo.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Misc\ThreadDispatcher.cs" />
-    <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Vertices_Display.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\Tree.cs" />
+    <Compile Include="Assets\Spestera_Net\Net_Player\Net_PlayerSpawner.cs" />
     <Compile Include="Assets\Scripts\Test Script\Player_Dummy.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\Rand.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\CommonSrc\Iso8859Dash1Encoding.cs" />
@@ -91,25 +92,26 @@
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Generate_Perlin_Bitmap.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\ZlibCodec.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\Inflate.cs" />
-    <Compile Include="Assets\Spestera_Net\Protocol\Net_MessageInterpreter.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\DeflateStream.cs" />
     <Compile Include="Assets\Scripts\Chunks\Copy_BaseChunk_Heightmap.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\ParallelBZip2OutputStream.cs" />
     <Compile Include="Assets\Spestera_Net\Net_Base\Net_ConnectionHandler.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\UI\Bandwidth_Displayer.cs" />
-    <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Generate_Neighbour.cs" />
+    <Compile Include="Assets\Spestera_Net\Net_Data\Net_ObjectData.cs" />
     <Compile Include="Assets\Spestera_Net\Net_MessageHandlers\Net_HeartbeatHandler.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\UI\Ping_Displayer.cs" />
-    <Compile Include="Assets\Spestera_Net\Protocol\NetworkProtocol.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\CommonSrc\CRC32.cs" />
     <Compile Include="Assets\Spestera_Net\Managers\Net_Dummies_Manager.cs" />
     <Compile Include="Assets\Spestera_Net\Net_Base\Net_AnimationController.cs" />
     <Compile Include="Assets\Scripts\Chunks\WorldGenerator.cs" />
     <Compile Include="Assets\Scripts\Base\BaseMotionAnimationTriggers.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Detail_Mask_Generator.cs" />
+    <Compile Include="Assets\Spestera_Net\Protocol\Net_MessageInterpreterGS.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\Zlib.cs" />
     <Compile Include="Assets\Spestera_Net\Protocol\ByteCompressor.cs" />
+    <Compile Include="Assets\Spestera_Net\Protocol\Net_MessageInterpreterZS.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Misc\Singleton.cs" />
+    <Compile Include="Assets\Spestera_Net\Protocol\ZSProtocol.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Read_Heightmap_Data.cs" />
     <Compile Include="Assets\Scripts\Chunks\Chunk_Base.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Modificator.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="Assets\Scripts\Chunks\WorldChunk.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\InfTree.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\BZip2\BitWriter.cs" />
+    <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_SaveData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Spestera_Net\Utils\Ionic\BZip2\NOTICE.txt" />
@@ -1047,6 +1050,10 @@
     </Reference>
     <Reference Include="Unity.Rider.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">

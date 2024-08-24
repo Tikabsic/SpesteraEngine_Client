@@ -21,11 +21,11 @@ public class Bandwidth_Displayer : MonoBehaviour
     {
         if (bwtype == Bandwidth_Type.TCP)
         {
-            Net_ConnectionHandler.Instance.OnBandwidthRecivedTCP += AddBytesReceived;
+            Net_ConnectionHandler.Instance.OnBandwidthRecivedGS += AddBytesReceived;
         }
         else
         {
-            Net_ConnectionHandler.Instance.OnBandwidthRecivedUDP += AddBytesReceived;
+            Net_ConnectionHandler.Instance.OnBandwidthRecivedZS += AddBytesReceived;
         }
 
         lastUpdateTime = Time.time;
