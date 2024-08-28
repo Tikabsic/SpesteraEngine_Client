@@ -27,9 +27,10 @@ public class Net_LoginModule : MonoBehaviour
         loginRequest.AccountName = _loginField.text;
         loginRequest.Password = _passwordField.text;
 
-        GSWrapper wrapper = new GSWrapper();
-        wrapper.Type = GSWrapper.Types.MessageType.Requestlogin;
-        wrapper.Payload = loginRequest.ToByteString();
+        GSWrapperRequest wrapper = new GSWrapperRequest();
+        ConnectionRequestWrapper connectionWrapper = new ConnectionRequestWrapper();
+        wrapper.ConnectionRequest = connectionWrapper;
+        wrapper.ConnectionRequest.RequestLogin = loginRequest;
 
         Net_ConnectionHandler.Instance.SendSpesteraMessage_GameServer(wrapper, false);
 
@@ -37,17 +38,9 @@ public class Net_LoginModule : MonoBehaviour
         _passwordField.text = "";
     }
 
-    private void ValidationResult(string message, bool validationresult)
+    private void ValidationResult(string message)
     {
-        if (validationresult)
-        {
-            Debug.Log(message);
-        }
-        else
-        {
-            Debug.Log(message);
-            Net_ConnectionHandler.Instance.CloseConnection();
-        }
+        Debug.Log(message);
     }
 
 }

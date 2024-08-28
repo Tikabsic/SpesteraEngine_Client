@@ -110,6 +110,7 @@
     <Compile Include="Assets\Spestera_Net\Utils\Ionic\Zlib\Zlib.cs" />
     <Compile Include="Assets\Spestera_Net\Protocol\ByteCompressor.cs" />
     <Compile Include="Assets\Spestera_Net\Protocol\Net_MessageInterpreterZS.cs" />
+    <Compile Include="Assets\Spestera_Net\Protocol\Connection.cs" />
     <Compile Include="Assets\Spestera_Net\Utils\Misc\Singleton.cs" />
     <Compile Include="Assets\Spestera_Net\Protocol\ZSProtocol.cs" />
     <Compile Include="Assets\Scripts\Test Script\Terrain_Modification\Terrain_Read_Heightmap_Data.cs" />

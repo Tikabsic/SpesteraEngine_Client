@@ -27,6 +27,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     //GS client
     private NetworkStream _streamGS;
     private System.Net.Sockets.TcpClient _tcpClientGS;
+    private CancellationTokenSource _gsCancellationToken;
 
     //ZS client
     private NetworkStream _streamZS;
@@ -54,10 +55,11 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         socket.Bind(new IPEndPoint(IPAddress.Any, 0));
         _tcpClientGS.Client = socket;
+        _gsCancellationToken = new CancellationTokenSource();
 
         await _tcpClientGS.ConnectAsync(_serverIp, _serverPort_GS);
         _streamGS = _tcpClientGS.GetStream();
-        _ = Task.Run(() => ReceiveSpesteraMessages_GameServer());
+        _ = Task.Run(() => ReceiveSpesteraMessages_GameServer(_gsCancellationToken.Token));
     }
 
     public async void ConnectToZoneServerServer()
@@ -77,10 +79,10 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
     }
 
     #region GameServer Messages
-    private async Task ReceiveSpesteraMessages_GameServer()
+    private async Task ReceiveSpesteraMessages_GameServer(CancellationToken token)
     {
         
-        while(!_isDisconnecting)
+        while(!token.IsCancellationRequested)
         {
             try
             {
@@ -91,7 +93,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 
                     try
                     {
-                        GSWrapper wrapper = GSWrapper.Parser.ParseFrom(_gsBuffer, 0, bytesRead);
+                        GSWrapperResponse wrapper = GSWrapperResponse.Parser.ParseFrom(_gsBuffer, 0, bytesRead);
                         _messageInterpreterGS.HandleWrapper(wrapper);
                     }
                     catch (InvalidProtocolBufferException ex)
@@ -104,10 +106,6 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
                         if (decompressedData != null)
                         {
                             _messageInterpreterGS.InterpretMessage(decompressedData, decompressedData.Length);
-                        }
-                        else
-                        {
-
                         }
                     }
                     catch (InvalidProtocolBufferException ex)
@@ -145,7 +143,7 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
 
 
 
-    public async void SendSpesteraMessage_GameServer(GSWrapper wrapper, bool isCompressed)
+    public async void SendSpesteraMessage_GameServer(GSWrapperRequest wrapper, bool isCompressed)
     {
         try
         {
@@ -256,9 +254,10 @@ public class Net_ConnectionHandler : Singleton<Net_ConnectionHandler>
         logoutMessage.PlayerId = NetworkCredits.PlayerId;
         logoutPlayer.PlayerId = NetworkCredits.PlayerId;
 
-        GSWrapper logoutWrapper = new GSWrapper();
-        logoutWrapper.Type = GSWrapper.Types.MessageType.Clientlogout;
-        logoutWrapper.Payload = logoutMessage.ToByteString();
+        GSWrapperRequest logoutWrapper = new GSWrapperRequest();
+        ConnectionRequestWrapper connectionWrapper = new ConnectionRequestWrapper();
+        logoutWrapper.ConnectionRequest = connectionWrapper;
+        logoutWrapper.ConnectionRequest.ClientLogout = logoutMessage;
 
         ZSWrapper playerLogoutWrapper = new ZSWrapper();
         playerLogoutWrapper.Type = ZSWrapper.Types.MessageType.Playerout;

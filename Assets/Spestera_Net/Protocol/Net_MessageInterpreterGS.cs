@@ -8,7 +8,7 @@ public class Net_MessageInterpreterGS
 
     public static event Action<PlayerInitialData> OnOtherClientLogin;
     public static event Action<uint> OnOtherClientLogout;
-    public static event Action<string, bool> OnLoginStateMessage;
+    public static event Action<string> OnLoginStateMessage;
 
 
     public void InterpretMessage(byte[] data, int length)
@@ -17,21 +17,17 @@ public class Net_MessageInterpreterGS
         {
             try
             {
-                GSWrapper wrapper = new GSWrapper();
+                GSWrapperResponse wrapper = new GSWrapperResponse();
 
-                wrapper = GSWrapper.Parser.ParseFrom(data, 0, length);
+                wrapper = GSWrapperResponse.Parser.ParseFrom(data, 0, length);
                 if (wrapper != null)
                 {
 
-                    switch (wrapper.Type)
+                    switch (wrapper.ResponseCase)
                     {
-                        case GSWrapper.Types.MessageType.Clientlogout:
-                            HandleClientLogout(wrapper.Payload);
+                        case GSWrapperResponse.ResponseOneofCase.ConnectionResponse:
+                            HandleConnectionResponseWrapper(wrapper.ConnectionResponse);
                             break;
-                        //case GSWrapper.Types.MessageType.Clientlogin:
-                        //    Debug.Log("Client login");
-                        //    HandleClientLogin(wrapper.Payload);
-                        //    break;
                         default:
                             Debug.Log("Unknown message type");
                             break;
@@ -46,7 +42,7 @@ public class Net_MessageInterpreterGS
         }, null);
     }
 
-    public void HandleWrapper(GSWrapper wrapper)
+    public void HandleWrapper(GSWrapperResponse wrapper)
     {
 
         NetworkManager._syncContext.Post(_ =>
@@ -55,25 +51,13 @@ public class Net_MessageInterpreterGS
             {
                 if (wrapper != null)
                 {
-
-                    switch (wrapper.Type)
+                    switch (wrapper.ResponseCase)
                     {
-                        case GSWrapper.Types.MessageType.Assignid:
-                            HandleAssignId(wrapper.Payload);
-                            break;
-                        case GSWrapper.Types.MessageType.Clientlogout:
-                            HandleClientLogout(wrapper.Payload);
-                            break;
-                        //case GSWrapper.Types.MessageType.Clientlogin:
-                        //    Debug.Log("Client login");
-                        //    HandleClientLogin(wrapper.Payload);
-                        //
-                        case GSWrapper.Types.MessageType.Loginrequestresult:
-                            LoginRequestResult result = LoginRequestResult.Parser.ParseFrom(wrapper.Payload);
-                            OnLoginStateMessage?.Invoke(result.Message, result.ValidationResult);
+                        case GSWrapperResponse.ResponseOneofCase.ConnectionResponse:
+                            HandleConnectionResponseWrapper(wrapper.ConnectionResponse);
                             break;
                         default:
-                            Debug.Log("Unknown message type");
+                            Debug.Log("Unknown wrapper type");
                             break;
                     }
                     return;
@@ -87,9 +71,31 @@ public class Net_MessageInterpreterGS
         }, null);
     }
 
-    private void HandleAssignId(ByteString payload)
+    #region ConnectionResponseWrapper
+
+    private void HandleConnectionResponseWrapper(ConnectionResponseWrapper wrapper)
     {
-        var id = AssignId.Parser.ParseFrom(payload);
+        switch (wrapper.ActionCase)
+        {
+            case ConnectionResponseWrapper.ActionOneofCase.AssignId:
+                HandleAssignId(wrapper.AssignId);
+                break;
+            case ConnectionResponseWrapper.ActionOneofCase.LoginResult:
+                OnLoginStateMessage?.Invoke(wrapper.LoginResult.Message);
+                break;
+            case ConnectionResponseWrapper.ActionOneofCase.LoginResponse:
+
+                break;
+            default:
+                Debug.Log("Unknown action case...");
+                break;
+        }
+
+    }
+
+
+    private void HandleAssignId(AssignId id)
+    {
         NetworkCredits.SetPlayerId((uint)id.String);
         OnClientLogin?.Invoke();
     }
@@ -107,4 +113,6 @@ public class Net_MessageInterpreterGS
         var data = ClientLogout.Parser.ParseFrom(payload);
         OnOtherClientLogout?.Invoke(data.PlayerId);
     }
+    #endregion
+
 }
